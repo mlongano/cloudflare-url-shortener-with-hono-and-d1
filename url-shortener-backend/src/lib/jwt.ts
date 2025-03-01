@@ -1,11 +1,19 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 
 // Generate JWT tokens
-export function generateTokens(env: Env, userId: number, email: string, jwtSecret: string, refreshSecret: string) {
+export function generateTokens(userId: number, email: string, env: Env) {
 
-  const accessToken = jwt.sign({ userId, email }, jwtSecret, { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions);
+  const accessToken = jwt.sign(
+    { userId, email },
+    env.ACCESS_TOKEN_SECRET,
+    { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
+  );
 
-  const refreshToken = jwt.sign({ userId, email }, refreshSecret, { expiresIn: env.REFRESH_TOKEN_EXPIRY } as SignOptions);
+  const refreshToken = jwt.sign(
+    { userId, email },
+    env.REFRESH_TOKEN_SECRET,
+    { expiresIn: env.REFRESH_TOKEN_EXPIRY } as SignOptions
+  );
 
   return { accessToken, refreshToken };
 }
