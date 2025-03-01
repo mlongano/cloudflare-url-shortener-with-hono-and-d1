@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { hashPassword } from '../../url-shortener-backend/src/lib/hashAndCompare';
+import { hashPassword, verifyPassword } from '../../url-shortener-backend/src/lib/hashAndCompare';
 
 const app = new Hono()
 
@@ -75,6 +75,50 @@ app.post('/api/v1/auth/register', async (c) => {
     }, 500);
   }
 
+});
+
+type LoginQuery = {
+  email: string;
+  password: string;
+};
+
+app.post('/api/v1/auth/login', async (c) => {
+  const { email, password } = await c.req.json<LoginQuery>();
+  if (!email || !password) return c.json({
+    success: false,
+    results: []
+  }, 400);
+  const query = `SELECT * FROM users WHERE email=?;`;
+  const env = c.env as Env;
+  try {
+    const result = await env.DB
+      .prepare(query)
+      .bind(email)
+      .first<LoginQuery>();
+    if (!result) {
+      return c.json({
+        success: false,
+        message: "User not found"
+      }, 404);
+    }
+    if (await verifyPassword(result.password, password)) {
+      return c.json({
+        success: true,
+        result: result
+      }, 202);
+    } else {
+      return c.json({
+        success: false,
+        message: "Invalid password"
+      }, 401);
+    }
+  } catch (error: any) {
+    console.error("Error logging in user: ", error.message);
+    return c.json({
+      success: false,
+      message: error.message || "Internal server error",
+    }, 500);
+  }
 });
 
 export default app
