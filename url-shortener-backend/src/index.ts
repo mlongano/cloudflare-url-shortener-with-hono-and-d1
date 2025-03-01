@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import authRouter from './routes/auth.routes';
 
 import { verifyPassword } from './lib/hashAndCompare';
+import userRouter from './routes/user.routes';
 
 const app = new Hono()
 
@@ -23,24 +24,10 @@ const api = new Hono<{ Bindings: Env }>();
 
 // Mount routers
 api.route('/auth', authRouter);
+api.route('/users', userRouter);
 
 // Mount API under /api/v1
 app.route('/api/v1', api);
 
-app.get('/api/v1/users', async (c) => {
-  const env = c.env as Env;
-  const result = await env.DB.prepare(
-    `select * from users;`,
-  )
-    .all();
-  if (!result! || !result.success) {
-    return c.json({
-      success: false,
-      results: []
-    }, 404);
-  }
-
-  return c.json(result.results, 200);
-});
 
 export default app
