@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { hashPassword } from '../lib/hashAndCompare';
+import { hashPassword, verifyPassword } from '../lib/hashAndCompare';
 
 // Register user
 // POST /api/v1/auth/register
@@ -45,4 +45,48 @@ export const register = async (c: Context<{ Bindings: Env }>) => {
     }, 500);
   }
 
+};
+
+type LoginQuery = {
+  email: string;
+  password: string;
+};
+
+export const login = async (c: Context<{ Bindings: Env }>) => {
+  const { email, password } = await c.req.json<LoginQuery>();
+  if (!email || !password) return c.json({
+    success: false,
+    results: []
+  }, 400);
+  const query = `SELECT * FROM users WHERE email=?;`;
+  const env = c.env as Env;
+  try {
+    const result = await env.DB
+      .prepare(query)
+      .bind(email)
+      .first<LoginQuery>();
+    if (!result) {
+      return c.json({
+        success: false,
+        message: "User not found"
+      }, 404);
+    }
+    if (await verifyPassword(result.password, password)) {
+      return c.json({
+        success: true,
+        result: result
+      }, 202);
+    } else {
+      return c.json({
+        success: false,
+        message: "Invalid password"
+      }, 401);
+    }
+  } catch (error: any) {
+    console.error("Error logging in user: ", error.message);
+    return c.json({
+      success: false,
+      message: error.message || "Internal server error",
+    }, 500);
+  }
 };
