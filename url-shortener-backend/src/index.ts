@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { hashPassword, verifyPassword } from '../../url-shortener-backend/src/lib/hashAndCompare';
+import { hashPassword, verifyPassword } from './lib/hashAndCompare';
 
 const app = new Hono()
 
