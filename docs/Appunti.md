@@ -55,7 +55,8 @@ Return output as JSON rather than a table.
 Execute commands/files against a preview D1 database (as defined by preview_database_id in the Wrangler configuration file).
 --batch-size  optional
 Number of queries to send in a single batch.
-
+```
+---
 
 ## Password hashing in Cloudflare Workers
 
@@ -117,4 +118,41 @@ export async function verifyPassword(
   const [, attemptHash] = attemptHashWithSalt.split(":");
   return attemptHash === originalHash;
 }
+```
+---
+
+## Suggested Project Structure
+
+```sh
+project/
+├── src/
+│   ├── index.ts                 # Main entry point
+│   ├── config/
+│   │   └── cors.ts              # CORS configuration
+│   ├── controllers/
+│   │   ├── auth.controller.ts   # Authentication logic
+│   │   ├── user.controller.ts   # User-related operations
+│   │   └── data.controller.ts   # Data CRUD operations
+│   ├── middleware/
+│   │   ├── auth.middleware.ts   # JWT authentication middleware
+│   │   └── error.middleware.ts  # Error handling middleware
+│   ├── routes/
+│   │   ├── auth.routes.ts       # Auth routes
+│   │   ├── user.routes.ts       # User routes
+│   │   └── data.routes.ts       # Data routes
+│   ├── services/
+│   │   ├── auth.service.ts      # Auth business logic
+│   │   ├── user.service.ts      # User business logic
+│   │   └── data.service.ts      # Data business logic
+│   ├── lib/
+│   │   ├── hashAndCompare.ts    # Password utilities (existing)
+│   │   └── jwt.ts               # JWT utilities
+│   ├── types/
+│   │   ├── env.ts               # Environment type definitions
+│   │   ├── auth.types.ts        # Auth-related types
+│   │   └── data.types.ts        # Data-related types
+│   └── db/
+│       └── schema.sql           # Database schema
+└── wrangler.toml                # Cloudflare configuration
+
 ```
