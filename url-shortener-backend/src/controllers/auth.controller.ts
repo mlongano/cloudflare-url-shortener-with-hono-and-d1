@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { hashPassword, verifyPassword } from '../lib/hashAndCompare';
 import { generateTokens } from '../lib/jwt';
 import { AuthUser } from '../types';
+import { setAuthCookies } from '../middleware/auth.middleware';
 
 // Register user
 // POST /api/v1/auth/register
@@ -73,6 +74,7 @@ export const login = async (c: Context<{ Bindings: Env }>) => {
         message: "User not found"
       }, 404);
     }
+    // Check password and generate tokens
     if (await verifyPassword(user.password, password)) {
       // Generate tokens
       const { accessToken, refreshToken } = await generateTokens(
@@ -87,21 +89,26 @@ export const login = async (c: Context<{ Bindings: Env }>) => {
         .bind(refreshToken, user.id)
         .run();
 
+      // Set cookies
+      setAuthCookies(c, accessToken, refreshToken);
 
+      // Return user data in successful response
       return c.json({
         success: true,
         result: {
-          accessToken,
-          refreshToken
-        }
+          id: user.id,
+          email: user.email
+        },
       }, 202);
     } else {
+      // Return error if the check of password fails
       return c.json({
         success: false,
         message: "Invalid password"
       }, 401);
     }
   } catch (error: any) {
+    // Handle error of DB queries and password verification promises
     console.error("Error logging in user: ", error.message);
     return c.json({
       success: false,
