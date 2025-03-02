@@ -1,21 +1,26 @@
-import { decode, sign, verify } from 'hono/jwt'
-
+import { sign, verify } from 'hono/jwt'
 
 // Generate JWT tokens
 export async function generateTokens(userId: number, email: string, env: Env) {
 
+  const now = Math.floor(Date.now() / 1000);
+
   const payload = {
     userId,
     email,
-    exp: Math.floor(Date.now() / 1000) + parseInt(env.ACCESS_TOKEN_EXPIRY),
+    nbf: now,
+    iat: now,
+    exp: now + parseInt(env.ACCESS_TOKEN_EXPIRY),
   }
+
   console.log('token payload: ', payload);
 
   const accessToken = await sign(
     payload,
     env.ACCESS_TOKEN_SECRET,
   );
-  payload.exp = Math.floor(Date.now() / 1000) + parseInt(env.REFRESH_TOKEN_EXPIRY);
+  payload.exp = now + parseInt(env.REFRESH_TOKEN_EXPIRY);
+
   console.log('refresh token payload: ', payload);
 
   const refreshToken = await sign(
@@ -29,6 +34,7 @@ export async function generateTokens(userId: number, email: string, env: Env) {
 // Verify JWT token
 export async function verifyToken(token: string, secret: string) {
   try {
+    // TODO: check if `verify` is controlling the `exp` and `iat` fields
     return await verify(token, secret);
   } catch (error) {
     return null;
