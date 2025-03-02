@@ -1,27 +1,35 @@
-import jwt, { SignOptions } from 'jsonwebtoken';
+import { decode, sign, verify } from 'hono/jwt'
+
 
 // Generate JWT tokens
-export function generateTokens(userId: number, email: string, env: Env) {
+export async function generateTokens(userId: number, email: string, env: Env) {
 
-  const accessToken = jwt.sign(
-    { userId, email },
+  const payload = {
+    userId,
+    email,
+    exp: Math.floor(Date.now() / 1000) + parseInt(env.ACCESS_TOKEN_EXPIRY),
+  }
+  console.log('token payload: ', payload);
+
+  const accessToken = await sign(
+    payload,
     env.ACCESS_TOKEN_SECRET,
-    { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
   );
+  payload.exp = Math.floor(Date.now() / 1000) + parseInt(env.REFRESH_TOKEN_EXPIRY);
+  console.log('refresh token payload: ', payload);
 
-  const refreshToken = jwt.sign(
-    { userId, email },
+  const refreshToken = await sign(
+    payload,
     env.REFRESH_TOKEN_SECRET,
-    { expiresIn: env.REFRESH_TOKEN_EXPIRY } as SignOptions
   );
 
   return { accessToken, refreshToken };
 }
 
 // Verify JWT token
-export function verifyToken(token: string, secret: string) {
+export async function verifyToken(token: string, secret: string) {
   try {
-    return jwt.verify(token, secret);
+    return await verify(token, secret);
   } catch (error) {
     return null;
   }

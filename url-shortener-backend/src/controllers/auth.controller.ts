@@ -1,5 +1,7 @@
 import { Context } from 'hono';
 import { hashPassword, verifyPassword } from '../lib/hashAndCompare';
+import { generateTokens } from '../lib/jwt';
+import { AuthUser } from '../types';
 
 // Register user
 // POST /api/v1/auth/register
@@ -61,20 +63,37 @@ export const login = async (c: Context<{ Bindings: Env }>) => {
   const query = `SELECT * FROM users WHERE email=?;`;
   const env = c.env as Env;
   try {
-    const result = await env.DB
+    const user = await env.DB
       .prepare(query)
       .bind(email)
-      .first<LoginQuery>();
-    if (!result) {
+      .first<AuthUser>();
+    if (!user) {
       return c.json({
         success: false,
         message: "User not found"
       }, 404);
     }
-    if (await verifyPassword(result.password, password)) {
+    if (await verifyPassword(user.password, password)) {
+      // Generate tokens
+      const { accessToken, refreshToken } = await generateTokens(
+        user.id,
+        user.email,
+        c.env
+      );
+
+      // Store refresh token in database
+      await c.env.DB
+        .prepare('UPDATE users SET refresh_token = ? WHERE id = ?')
+        .bind(refreshToken, user.id)
+        .run();
+
+
       return c.json({
         success: true,
-        result: result
+        result: {
+          accessToken,
+          refreshToken
+        }
       }, 202);
     } else {
       return c.json({
