@@ -1,9 +1,10 @@
 # Appunti
 
+- Tutorial for D1: [Getting Started with Wrangler](https://developers.cloudflare.com/d1/get-started/)
+- Another tutorial: [Build a Staff Directory Application](https://developers.cloudflare.com/d1/tutorials/build-a-staff-directory-app/)
+- A demo project made in the AS2023-2024: [A beginner guide to build a ReST API with node.js](https://github.com/mlongano/rest-node-showcase)
+
 ## [wrangler DB commands](https://developers.cloudflare.com/d1/wrangler-commands/)
-
-tutorial for D1: [Getting Started with Wrangler](https://developers.cloudflare.com/d1/get-started/)
-
 
 ```sh
 execute
