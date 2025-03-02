@@ -5,5 +5,7 @@ interface Env {
 	REFRESH_TOKEN_SECRET: string;
 	ACCESS_TOKEN_EXPIRY: string;
 	REFRESH_TOKEN_EXPIRY: string;
+	ACCESS_TOKEN_COOKIE_NAME: string;
+	REFRESH_TOKEN_COOKIE_NAME: string;
 	DB: D1Database;
 }

@@ -5,19 +5,20 @@ import { setCookie } from 'hono/cookie';
 
 // Helper function to set auth cookies
 export function setAuthCookies(c: Context, accessToken: string, refreshToken: string) {
-  setCookie(c, 'access_token', accessToken, {
+  const env = c.env as Env;
+  setCookie(c, env.ACCESS_TOKEN_COOKIE_NAME, accessToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'Lax',
     path: '/',
-    maxAge: c.env.ACCESS_TOKEN_MAX_AGE
+    maxAge: parseInt(env.ACCESS_TOKEN_EXPIRY)
   });
 
-  setCookie(c, 'refresh_token', refreshToken, {
+  setCookie(c, c.env.REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: 'Lax',
     path: '/',
-    maxAge: c.env.REFRESH_TOKEN_MAX_AGE
+    maxAge: parseInt(env.REFRESH_TOKEN_EXPIRY)
   });
 }
