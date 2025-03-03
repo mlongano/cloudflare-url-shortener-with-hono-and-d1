@@ -2,6 +2,8 @@ import { Hono } from 'hono'
 import authRouter from './routes/auth.routes';
 import userRouter from './routes/user.routes';
 import { corsMiddleware } from './middleware/cors.middleware';
+import { getConnInfo } from 'hono/cloudflare-workers';
+import { getCookie } from 'hono/cookie';
 
 const app = new Hono()
 
@@ -12,9 +14,24 @@ app.get('/', (c) => c.text('Hono!'))
 
 // Health check endpoint
 app.get('/health', (c) => {
+  const cookies = getCookie(c);
+  const header = c.req.header()
+  const raw = c.req.raw;
+  const origin = c.req.header('origin');
+  const host = c.req.header('host');
+  const url = c.req.url;
+  const connInfo = getConnInfo(c)
+  console.log(`Your request origin is: ${origin}`);
   return c.json({
     status: 'OK',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    origin,
+    host,
+    url,
+    cookies,
+    connInfo,
+    header,
+    raw,
   })
 })
 
