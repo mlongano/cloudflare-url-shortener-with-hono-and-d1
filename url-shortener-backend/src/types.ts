@@ -5,6 +5,11 @@ export interface AuthUser {
   refresh_token?: string;
 }
 
+export type AuthUserId = {
+  id: number;
+  email: string;
+}
+
 export type JWTPayload = {
   userId: number;
   email: string;
