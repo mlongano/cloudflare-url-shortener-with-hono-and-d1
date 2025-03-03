@@ -12,7 +12,7 @@ export const corsMiddleware = (): MiddlewareHandler => {
       throw new Error('ALLOWED_ORIGINS must be an array');
     }
 
-    console.log('Origins: ', Array.isArray(c.env.ALLOWED_ORIGINS));
+    console.log('Allowed Origins: ', c.env.ALLOWED_ORIGINS);
 
     // Create cors middleware with the parsed origins
     const middleware = cors({
