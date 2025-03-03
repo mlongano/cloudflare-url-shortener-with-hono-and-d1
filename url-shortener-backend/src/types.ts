@@ -1,4 +1,4 @@
-export interface AuthUser {
+export type AuthUser = {
   id: number;
   email: string;
   password: string;
