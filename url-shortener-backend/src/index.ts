@@ -1,12 +1,12 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
 import authRouter from './routes/auth.routes';
-
 import userRouter from './routes/user.routes';
+import { corsMiddleware } from './middleware/cors.middleware';
 
 const app = new Hono()
 
-app.use('/api/*', cors())
+// Use the CORS middleware wrapper
+app.use('*', corsMiddleware());
 
 app.get('/', (c) => c.text('Hono!'))
 
