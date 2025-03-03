@@ -1,17 +1,18 @@
 import { sign, verify } from 'hono/jwt'
+import { JWTPayload } from '../types';
 
 // Generate JWT tokens
 export async function generateTokens(userId: number, email: string, env: Env) {
 
   const now = Math.floor(Date.now() / 1000);
 
-  const payload = {
+  const payload: JWTPayload = {
     userId,
     email,
     nbf: now,
     iat: now,
     exp: now + parseInt(env.ACCESS_TOKEN_EXPIRY),
-  }
+  };
 
   // console.log('token payload: ', payload);
 
