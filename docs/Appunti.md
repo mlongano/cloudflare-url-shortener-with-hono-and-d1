@@ -189,3 +189,16 @@ project/
 
 This service layer completes the architecture above, providing a clean separation between HTTP handling code and business logic.
 With this structure, the application will be more maintainable and easier to extend as requirements change.
+
+## About CORS configuration for fetching, authtentications and cookies settings
+
+CORS is hard to get right, especially when dealing with cookies and authentication. Here are some tips to help you configure CORS correctly:
+- Use the `credentials: 'include'` option when making requests from the client to include cookies in the request.
+- Set the `Access-Control-Allow-Origin` header to the client's origin (e.g., `https://example.com`) to allow requests from that domain. You cannot use the wildcard `*` when `credentials` is set to `include`. Otherwise, the browser will block the request.
+- Set the `Access-Control-Allow-Credentials` header to `true` to allow cookies to be sent with the request.
+- Set the `Access-Control-Allow-Methods` header to the allowed HTTP methods (e.g., `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS`) to restrict the methods that can be used in the request.
+- Set the `Access-Control-Allow-Headers` header to the allowed headers (e.g., `Content-Type`, `Authorization`) to restrict the headers that can be used in the request.
+- Set the `Access-Control-Expose-Headers` header to the headers that the client can access in the response (e.g., `Authorization`, `Content-Type`) to expose additional headers to the client.
+- Set the `Access-Control-Max-Age` header to the number of seconds the preflight request can be cached by the client to reduce the number of preflight requests.
+- Use the `OPTIONS` method to handle preflight requests and respond with the appropriate CORS headers.
+- You cannot use the wildcard `*` not only for `Access-Control-Allow-Origin` but also for `Access-Control-Allow-Headers` and `Access-Control-Allow-Methods` when `credentials` is set to `include`.
