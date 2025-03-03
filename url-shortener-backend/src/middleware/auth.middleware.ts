@@ -40,6 +40,67 @@ export const jwtAuthenticate = (): MiddlewareHandler => {
   }
 }
 
+export async function authenticate(c: Context<{ Bindings: Env, Variables: { user: AuthUserId } }>, next: Next) {
+
+  // Check if user is already set (possibly from a previous middleware for example jwtAuthenticate)
+  if (c.get('user')) {
+    // JWT succeeded, but we still need to verify the user in database
+    const user = c.get('user');
+
+    // Get user from database to ensure they still exist
+    const dbUser = await c.env.DB
+      .prepare('SELECT id, email FROM users WHERE id = ?')
+      .bind(user.id)
+      .first<AuthUserId>();
+
+    if (!dbUser) {
+      return c.json({
+        success: false,
+        message: 'User not found'
+      }, 404);
+    }
+
+    // Update user in context with DB data to ensure that email or other future fields are up to date
+    c.set('user', dbUser);
+    return next();
+  }
+  // The user is not set, so we need to authenticate
+
+  // Check if the request has an access token in the cookie (this middleware is only for cookie-based auth)
+  const accessToken = getCookie(c, c.env.ACCESS_TOKEN_COOKIE_NAME);
+
+  if (!accessToken) {
+    return c.json({
+      success: false,
+      message: 'Authentication required'
+    }, 401);
+  }
+
+  const payload = await verifyToken(accessToken, c.env.ACCESS_TOKEN_SECRET) as JWTPayload | null;
+
+  if (!payload) {
+    // Access token invalid/expired, try to refresh
+    return refreshTokenFlow(c, next);
+  }
+
+  // Get user from database to ensure they still exist
+  const user = await c.env.DB
+    .prepare('SELECT id, email FROM users WHERE id = ?')
+    .bind(payload.userId)
+    .first<AuthUserId>();
+
+  if (!user) {
+    return c.json({
+      success: false,
+      message: 'User not found'
+    }, 404);
+  }
+
+  // Add user to context
+  c.set('user', user);
+  await next();
+};
+
 // ==== Helper functions ====
 // Helper function to refresh the token
 async function refreshTokenFlow(c: Context<{ Bindings: Env, Variables: { user: AuthUserId } }>, next: Next) {
