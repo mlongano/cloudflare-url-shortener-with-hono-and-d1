@@ -13,7 +13,7 @@ export async function generateTokens(userId: number, email: string, env: Env) {
     exp: now + parseInt(env.ACCESS_TOKEN_EXPIRY),
   }
 
-  console.log('token payload: ', payload);
+  // console.log('token payload: ', payload);
 
   const accessToken = await sign(
     payload,
@@ -21,7 +21,7 @@ export async function generateTokens(userId: number, email: string, env: Env) {
   );
   payload.exp = now + parseInt(env.REFRESH_TOKEN_EXPIRY);
 
-  console.log('refresh token payload: ', payload);
+  // console.log('refresh token payload: ', payload);
 
   const refreshToken = await sign(
     payload,
