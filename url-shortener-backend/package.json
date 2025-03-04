@@ -5,7 +5,6 @@
 	"scripts": {
 		"deploy": "wrangler deploy --minify --env production",
 		"dev": "wrangler dev --env development",
-		"start": "wrangler dev",
 		"test": "vitest",
 		"cf-typegen": "wrangler types"
 	},
@@ -21,4 +20,4 @@
 		"hono": "^4.7.2",
 		"jsonwebtoken": "^9.0.2"
 	}
-}
+}    "start": "wrangler dev --env production",
