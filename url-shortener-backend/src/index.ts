@@ -35,8 +35,6 @@ app.get('/health', (c) => {
   })
 })
 
-
-
 // API routes
 const api = new Hono<{ Bindings: Env }>();
 

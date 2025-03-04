@@ -1,23 +1,24 @@
 {
-	"name": "url-shortener-backend",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"deploy": "wrangler deploy --minify --env production",
-		"dev": "wrangler dev --env development",
-		"test": "vitest",
-		"cf-typegen": "wrangler types"
-	},
-	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.6.4",
-		"@cloudflare/workers-types": "^4.20250224.0",
-		"@types/jsonwebtoken": "^9.0.9",
-		"typescript": "^5.5.2",
-		"vitest": "~2.1.9",
-		"wrangler": "^3.111.0"
-	},
-	"dependencies": {
-		"hono": "^4.7.2",
-		"jsonwebtoken": "^9.0.2"
-	}
-}    "start": "wrangler dev --env production",
+  "name": "url-shortener-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy --minify --env production",
+    "dev": "wrangler dev --env development",
+    "start": "wrangler dev --env production",
+    "test": "vitest",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.6.4",
+    "@cloudflare/workers-types": "^4.20250224.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "typescript": "^5.5.2",
+    "vitest": "~2.1.9",
+    "wrangler": "^3.111.0"
+  },
+  "dependencies": {
+    "hono": "^4.7.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
