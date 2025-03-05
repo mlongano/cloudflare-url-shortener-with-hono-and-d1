@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router";
 import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
 import { ThemeProvider } from "./components/theme-provider";
 
 export default function App() {
@@ -9,6 +10,7 @@ export default function App() {
         <main className="container mx-auto px-4 py-8 flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
           </Routes>
         </main>
       </div>
