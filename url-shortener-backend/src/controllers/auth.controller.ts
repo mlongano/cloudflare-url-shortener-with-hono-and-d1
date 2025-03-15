@@ -97,7 +97,9 @@ export const login = async (c: Context<{ Bindings: Env }>) => {
         success: true,
         result: {
           id: user.id,
-          email: user.email
+          email: user.email,
+					token: accessToken,
+          refreshToken: refreshToken,
         },
       }, 202);
     } else {
