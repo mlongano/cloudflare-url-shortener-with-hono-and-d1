@@ -1,10 +1,9 @@
-import { Hono } from 'hono';
-import { login, register } from '../controllers/auth.controller';
-import { auth } from 'hono/utils/basic-auth';
+import { Hono } from 'hono'
+import { login, logout, register } from '../controllers/auth.controller'
 
-const authRouter = new Hono<{ Bindings: Env }>();
+const authRouter = new Hono<{ Bindings: Env }>()
 
-authRouter.post('/register', register);
-authRouter.post('/login', login);
-
-export default authRouter;
+authRouter.post('/register', register)
+authRouter.post('/login', login)
+authRouter.post('/logout', logout)
+export default authRouter

@@ -1,120 +1,166 @@
-import { Context } from 'hono';
-import { hashPassword, verifyPassword } from '../lib/hashAndCompare';
-import { generateTokens } from '../lib/jwt';
-import { AuthUser } from '../types';
-import { setAuthCookies } from '../middleware/auth.middleware';
+import { Context } from 'hono'
+import { hashPassword, verifyPassword } from '../lib/hashAndCompare'
+import { generateTokens, verifyToken } from '../lib/jwt'
+import { AuthUser, JWTPayload } from '../types'
+import { setAuthCookies, clearAuthCookies } from '../middleware/auth.middleware'
+import { getCookie } from 'hono/cookie'
 
 // Register user
 // POST /api/v1/auth/register
 // Request body: { email: string, password: string }
 // Response body: { success: boolean, results: any[] } | { success: boolean, message: string }
 type RegisterQuery = {
-  email: string;
-  password: string;
-};
+  email: string
+  password: string
+}
 
 export const register = async (c: Context<{ Bindings: Env }>) => {
-  const { email, password } = await c.req.json<RegisterQuery>();
+  const { email, password } = await c.req.json<RegisterQuery>()
 
   // Check payload
-  if (!email || !password) return c.json({
-    success: false,
-    results: []
-  }, 400);
+  if (!email || !password)
+    return c.json(
+      {
+        success: false,
+        results: [],
+      },
+      400,
+    )
 
   const query = `
       INSERT INTO users (email, password)
-      VALUES (?, ?)`;
+      VALUES (?, ?)`
 
-  const env = c.env as Env;
+  const env = c.env as Env
 
   // Register user
   try {
-    const hash = await hashPassword(password);
-    const results = await env.DB
-      .prepare(query)
-      .bind(email, hash)
-      .run();
-    return c.json({
-      success: true,
-      results: results
-    }, 201);
+    const hash = await hashPassword(password)
+    const results = await env.DB.prepare(query).bind(email, hash).run()
+    return c.json(
+      {
+        success: true,
+        results: results,
+      },
+      201,
+    )
   } catch (error: any) {
     // Handle error if registration fails
-    console.error("Error registring user: ", error.message);
-    return c.json({
-      success: false,
-      message: error.message || "Internal server error",
-    }, 500);
+    console.error('Error registring user: ', error.message)
+    return c.json(
+      {
+        success: false,
+        message: error.message || 'Internal server error',
+      },
+      500,
+    )
   }
-
-};
+}
 
 type LoginQuery = {
-  email: string;
-  password: string;
-};
+  email: string
+  password: string
+}
 
 export const login = async (c: Context<{ Bindings: Env }>) => {
-  const { email, password } = await c.req.json<LoginQuery>();
-  if (!email || !password) return c.json({
-    success: false,
-    results: []
-  }, 400);
-  const query = `SELECT * FROM users WHERE email=?;`;
-  const env = c.env as Env;
-  try {
-    const user = await env.DB
-      .prepare(query)
-      .bind(email)
-      .first<AuthUser>();
-    if (!user) {
-      return c.json({
+  const { email, password } = await c.req.json<LoginQuery>()
+  // if email or password is missing return error
+  if (!email || !password)
+    return c.json(
+      {
         success: false,
-        message: "User not found"
-      }, 404);
+        results: [],
+      },
+      400,
+    )
+  const query = `SELECT * FROM users WHERE email=?;`
+  const env = c.env as Env
+  try {
+    const user = await env.DB.prepare(query).bind(email).first<AuthUser>()
+    if (!user) {
+      return c.json(
+        {
+          success: false,
+          message: 'User not found',
+        },
+        404,
+      )
     }
     // Check password and generate tokens
     if (await verifyPassword(user.password, password)) {
       // Generate tokens
-      const { accessToken, refreshToken } = await generateTokens(
-        user.id,
-        user.email,
-        c.env
-      );
+      const { accessToken, refreshToken } = await generateTokens(user.id, user.email, c.env)
 
       // Store refresh token in database
-      await c.env.DB
-        .prepare('UPDATE users SET refresh_token = ? WHERE id = ?')
-        .bind(refreshToken, user.id)
-        .run();
+      await c.env.DB.prepare('UPDATE users SET refresh_token = ? WHERE id = ?').bind(refreshToken, user.id).run()
 
       // Set cookies
-      setAuthCookies(c, accessToken, refreshToken);
+      setAuthCookies(c, accessToken, refreshToken)
 
       // Return user data in successful response
-      return c.json({
-        success: true,
-        result: {
-          id: user.id,
-          email: user.email,
-					token: accessToken,
-          refreshToken: refreshToken,
+      return c.json(
+        {
+          success: true,
+          result: {
+            id: user.id,
+            email: user.email,
+            token: accessToken,
+            refreshToken: refreshToken,
+          },
         },
-      }, 202);
+        202,
+      )
     } else {
       // Return error if the check of password fails
-      return c.json({
-        success: false,
-        message: "Invalid password"
-      }, 401);
+      return c.json(
+        {
+          success: false,
+          message: 'Invalid password',
+        },
+        401,
+      )
     }
   } catch (error: any) {
     // Handle error of DB queries and password verification promises
-    console.error("Error logging in user: ", error.message);
-    return c.json({
-      success: false,
-      message: error.message || "Internal server error",
-    }, 500);
+    console.error('Error logging in user: ', error.message)
+    return c.json(
+      {
+        success: false,
+        message: error.message || 'Internal server error',
+      },
+      500,
+    )
   }
-};
+}
+
+// Logout user
+// POST /api/v1/auth/logout
+export const logout = async (c: Context<{ Bindings: Env }>) => {
+  const refreshToken = getCookie(c, c.env.REFRESH_TOKEN_COOKIE_NAME)
+
+  if (refreshToken) {
+    try {
+      const payload = (await verifyToken(refreshToken, c.env.REFRESH_TOKEN_SECRET)) as JWTPayload | null
+
+      if (payload) {
+        // Clear the refresh token in the database for this user
+        await c.env.DB.prepare('UPDATE users SET refresh_token = NULL WHERE id = ? AND refresh_token = ?')
+          .bind(payload.userId, refreshToken)
+          .run()
+        console.log(`Cleared refresh token for user ID: ${payload.userId}`)
+      } else {
+        console.warn('Logout attempt with invalid refresh token.')
+      }
+    } catch (error: any) {
+      // Log verification error but still proceed to delete cookies
+      console.error('Error verifying refresh token during logout:', error.message)
+    }
+  } else {
+    console.warn('Logout attempt without refresh token cookie.')
+  }
+
+  // Always attempt to delete the cookies from the browser using the helper
+  clearAuthCookies(c)
+
+  return c.json({ success: true, message: 'Logged out successfully' }, 200)
+}
