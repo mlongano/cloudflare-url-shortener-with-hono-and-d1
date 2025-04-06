@@ -34,6 +34,11 @@ export default function HomePage() {
             <Link to="/login">Get Started</Link>
           </Button>
         </div>
+        <div className="flex justify-center mt-4 space-x-4">
+          <Button asChild>
+            <Link to="/diagnostics">Diagnostics</Link>
+          </Button>
+        </div>
       </section>
 
       <section className="py-12">
