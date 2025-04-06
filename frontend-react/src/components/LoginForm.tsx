@@ -42,6 +42,7 @@ export default function LoginForm({
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
+                      name="email"
                       type="email"
                       placeholder="m@example.com"
                       required
@@ -60,6 +61,7 @@ export default function LoginForm({
                     </div>
                     <Input
                       id="password"
+                      name="password"
                       type="password"
                       required
                       disabled={isLoading}
