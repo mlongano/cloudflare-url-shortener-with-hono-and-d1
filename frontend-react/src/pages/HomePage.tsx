@@ -31,7 +31,7 @@ export default function HomePage() {
         </p>
         <div className="flex justify-center space-x-4">
           <Button asChild>
-            <Link to="/login">Get Started</Link>
+            <Link to="/dashboard">Get Started</Link>
           </Button>
         </div>
         <div className="flex justify-center mt-4 space-x-4">
